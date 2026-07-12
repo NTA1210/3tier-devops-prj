@@ -25,17 +25,13 @@ pipeline {
     stages {
         stage('Cleanup Workspace') {
             steps {
-                script {
-                    cleanupWorkspace()
-                }
+                cleanupWorkspace()
             }
         }
         
         stage('Clone Repository') {
             steps {
-                script {
-                    checkoutRepo(params.GIT_REPO, params.GIT_BRANCH)
-                }
+                checkoutRepo(params.GIT_REPO, params.GIT_BRANCH)
             }
         }
         
@@ -43,27 +39,23 @@ pipeline {
             parallel {
                 stage('Build Main App Image') {
                     steps {
-                        script {
-                            buildDockerImage(
-                                imageName: env.DOCKER_IMAGE_NAME,
-                                imageTag: env.DOCKER_IMAGE_TAG,
-                                dockerfile: 'Dockerfile',
-                                context: '.'
-                            )
-                        }
+                        buildDockerImage(
+                            imageName: env.DOCKER_IMAGE_NAME,
+                            imageTag: env.DOCKER_IMAGE_TAG,
+                            dockerfile: 'Dockerfile',
+                            context: '.'
+                        )
                     }
                 }
                 
                 stage('Build Migration Image') {
                     steps {
-                        script {
-                            buildDockerImage(
-                                imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
-                                imageTag: env.DOCKER_IMAGE_TAG,
-                                dockerfile: 'scripts/Dockerfile.migration',
-                                context: '.'
-                            )
-                        }
+                        buildDockerImage(
+                            imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
+                            imageTag: env.DOCKER_IMAGE_TAG,
+                            dockerfile: 'scripts/Dockerfile.migration',
+                            context: '.'
+                        )
                     }
                 }
             }
@@ -71,17 +63,13 @@ pipeline {
         
         stage('Run Unit Tests') {
             steps {
-                script {
-                    runUnitTests()
-                }
+                runUnitTests()
             }
         }
         
         stage('Security Scan with Trivy') {
             steps {
-                script {
-                    trivyScan()
-                }
+                trivyScan()
             }
         }
         
@@ -89,25 +77,21 @@ pipeline {
             parallel {
                 stage('Push Main App Image') {
                     steps {
-                        script {
-                            pushDockerImage(
-                                imageName: env.DOCKER_IMAGE_NAME,
-                                imageTag: env.DOCKER_IMAGE_TAG,
-                                credentials: params.DOCKER_CREDENTIALS_ID
-                            )
-                        }
+                        pushDockerImage(
+                            imageName: env.DOCKER_IMAGE_NAME,
+                            imageTag: env.DOCKER_IMAGE_TAG,
+                            credentials: params.DOCKER_CREDENTIALS_ID
+                        )
                     }
                 }
                 
                 stage('Push Migration Image') {
                     steps {
-                        script {
-                            pushDockerImage(
-                                imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
-                                imageTag: env.DOCKER_IMAGE_TAG,
-                                credentials: params.DOCKER_CREDENTIALS_ID
-                            )
-                        }
+                        pushDockerImage(
+                            imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
+                            imageTag: env.DOCKER_IMAGE_TAG,
+                            credentials: params.DOCKER_CREDENTIALS_ID
+                        )
                     }
                 }
             }
@@ -115,15 +99,13 @@ pipeline {
         
         stage('Update Kubernetes Manifests') {
             steps {
-                script {
-                    updateK8sManifests(
-                        imageTag: env.DOCKER_IMAGE_TAG,
-                        manifestsPath: params.MANIFESTS_PATH,
-                        gitCredentials: params.GIT_CREDENTIALS_ID,
-                        gitUserName: params.GIT_USER_NAME,
-                        gitUserEmail: params.GIT_USER_EMAIL
-                    )
-                }
+                updateK8sManifests(
+                    imageTag: env.DOCKER_IMAGE_TAG,
+                    manifestsPath: params.MANIFESTS_PATH,
+                    gitCredentials: params.GIT_CREDENTIALS_ID,
+                    gitUserName: params.GIT_USER_NAME,
+                    gitUserEmail: params.GIT_USER_EMAIL
+                )
             }
         }
     }
