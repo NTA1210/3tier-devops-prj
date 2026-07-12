@@ -39,29 +39,25 @@ pipeline {
             }
         }
         
-        stage('Build Docker Images') {
-            parallel {
-                stage('Build Main App Image') {
-                    steps {
-                        buildDockerImage(
-                            imageName: env.DOCKER_IMAGE_NAME,
-                            imageTag: env.DOCKER_IMAGE_TAG,
-                            dockerfile: 'Dockerfile',
-                            context: '.'
-                        )
-                    }
-                }
-                
-                stage('Build Migration Image') {
-                    steps {
-                        buildDockerImage(
-                            imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
-                            imageTag: env.DOCKER_IMAGE_TAG,
-                            dockerfile: 'scripts/Dockerfile.migration',
-                            context: '.'
-                        )
-                    }
-                }
+        stage('Build Main App Image') {
+            steps {
+                buildDockerImage(
+                    imageName: env.DOCKER_IMAGE_NAME,
+                    imageTag: env.DOCKER_IMAGE_TAG,
+                    dockerfile: 'Dockerfile',
+                    context: '.'
+                )
+            }
+        }
+
+        stage('Build Migration Image') {
+            steps {
+                buildDockerImage(
+                    imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
+                    imageTag: env.DOCKER_IMAGE_TAG,
+                    dockerfile: 'scripts/Dockerfile.migration',
+                    context: '.'
+                )
             }
         }
         

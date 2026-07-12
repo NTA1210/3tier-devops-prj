@@ -15,8 +15,7 @@ COPY scripts ./scripts
 COPY .db ./.db
 
 # Install dependencies
-RUN npm install
-RUN npm install --save-dev @types/mongoose
+RUN npm ci
 
 # Set environment variables
 ENV NODE_ENV=development

@@ -28,3 +28,12 @@ README.md
 *.md
 .vscode
 .idea
+
+# Local/reference repos and infrastructure files not needed for app image
+.external
+terraform
+kubernetes
+helm-values
+TERRAFORM_GUIDE.md
+JENKINS.md
+LEARNING_GUIDE.md
