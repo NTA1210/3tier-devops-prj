@@ -31,7 +31,11 @@ pipeline {
         
         stage('Clone Repository') {
             steps {
-                checkoutRepo(params.GIT_REPO, params.GIT_BRANCH)
+                checkoutRepo(
+                    repoUrl: params.GIT_REPO,
+                    branch: params.GIT_BRANCH,
+                    credentialsId: params.GIT_CREDENTIALS_ID
+                )
             }
         }
         
@@ -63,13 +67,32 @@ pipeline {
         
         stage('Run Unit Tests') {
             steps {
-                runUnitTests()
+                runUnitTests(
+                    installCommand: 'npm ci',
+                    testCommand: 'npm run lint'
+                )
             }
         }
         
         stage('Security Scan with Trivy') {
-            steps {
-                trivyScan()
+            parallel {
+                stage('Scan Main App Image') {
+                    steps {
+                        trivyScan(
+                            imageName: env.DOCKER_IMAGE_NAME,
+                            imageTag: env.DOCKER_IMAGE_TAG
+                        )
+                    }
+                }
+
+                stage('Scan Migration Image') {
+                    steps {
+                        trivyScan(
+                            imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
+                            imageTag: env.DOCKER_IMAGE_TAG
+                        )
+                    }
+                }
             }
         }
         
@@ -100,9 +123,13 @@ pipeline {
         stage('Update Kubernetes Manifests') {
             steps {
                 updateK8sManifests(
+                    appImage: env.DOCKER_IMAGE_NAME,
+                    migrationImage: env.DOCKER_MIGRATION_IMAGE_NAME,
                     imageTag: env.DOCKER_IMAGE_TAG,
                     manifestsPath: params.MANIFESTS_PATH,
                     gitCredentials: params.GIT_CREDENTIALS_ID,
+                    gitRepo: params.GIT_REPO,
+                    gitBranch: params.GIT_BRANCH,
                     gitUserName: params.GIT_USER_NAME,
                     gitUserEmail: params.GIT_USER_EMAIL
                 )

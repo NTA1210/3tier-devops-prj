@@ -95,3 +95,6 @@ terraform/terraform.tfstate.backup
 terra-key.pub
 terra-key
 terraform/apps/helm-values/.*
+
+# Local reference clones
+.external/
