@@ -26,7 +26,7 @@ pipeline {
         stage('Cleanup Workspace') {
             steps {
                 script {
-                    clean_ws()
+                    cleanupWorkspace()
                 }
             }
         }
@@ -34,7 +34,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                    clone(params.GIT_REPO, params.GIT_BRANCH)
+                    checkoutRepo(params.GIT_REPO, params.GIT_BRANCH)
                 }
             }
         }
@@ -44,7 +44,7 @@ pipeline {
                 stage('Build Main App Image') {
                     steps {
                         script {
-                            docker_build(
+                            buildDockerImage(
                                 imageName: env.DOCKER_IMAGE_NAME,
                                 imageTag: env.DOCKER_IMAGE_TAG,
                                 dockerfile: 'Dockerfile',
@@ -57,7 +57,7 @@ pipeline {
                 stage('Build Migration Image') {
                     steps {
                         script {
-                            docker_build(
+                            buildDockerImage(
                                 imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
                                 imageTag: env.DOCKER_IMAGE_TAG,
                                 dockerfile: 'scripts/Dockerfile.migration',
@@ -72,7 +72,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script {
-                    run_tests()
+                    runUnitTests()
                 }
             }
         }
@@ -80,10 +80,7 @@ pipeline {
         stage('Security Scan with Trivy') {
             steps {
                 script {
-                    // Create directory for results
-                  
-                    trivy_scan()
-                    
+                    trivyScan()
                 }
             }
         }
@@ -93,7 +90,7 @@ pipeline {
                 stage('Push Main App Image') {
                     steps {
                         script {
-                            docker_push(
+                            pushDockerImage(
                                 imageName: env.DOCKER_IMAGE_NAME,
                                 imageTag: env.DOCKER_IMAGE_TAG,
                                 credentials: params.DOCKER_CREDENTIALS_ID
@@ -105,7 +102,7 @@ pipeline {
                 stage('Push Migration Image') {
                     steps {
                         script {
-                            docker_push(
+                            pushDockerImage(
                                 imageName: env.DOCKER_MIGRATION_IMAGE_NAME,
                                 imageTag: env.DOCKER_IMAGE_TAG,
                                 credentials: params.DOCKER_CREDENTIALS_ID
@@ -116,11 +113,10 @@ pipeline {
             }
         }
         
-        // Add this new stage
         stage('Update Kubernetes Manifests') {
             steps {
                 script {
-                    update_k8s_manifests(
+                    updateK8sManifests(
                         imageTag: env.DOCKER_IMAGE_TAG,
                         manifestsPath: params.MANIFESTS_PATH,
                         gitCredentials: params.GIT_CREDENTIALS_ID,
