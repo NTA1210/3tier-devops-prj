@@ -8,9 +8,20 @@ variable "ami_id" {
   default     = "ami-085f9c64a9b75eed5"
 }
 
-variable "instance_type" {
-  description = "Instance type for the EC2 instance"
+variable "jenkins_instance_type" {
+  description = "Instance type for the Jenkins EC2 instance"
+  default     = "t3.medium"
+}
+
+variable "bastion_instance_type" {
+  description = "Instance type for the Bastion EC2 instance"
   default     = "t3.micro"
+}
+
+variable "eks_node_instance_types" {
+  description = "Instance types for the EKS managed node group"
+  type        = list(string)
+  default     = ["t3.medium"]
 }
 
 variable "my_enviroment" {
